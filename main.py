@@ -157,8 +157,8 @@ for id in deckData.dualDeck:
 for id in deckData.comboDeck:
     print(id.getInformationString())
 
-player1 = player("player1deck.txt")
-player2 = player("player1deck.txt")
+player1 = player(input("Player one deck file name > "))
+player2 = player(input("Player two deck file name > "))
 
 while True:
     playerID = int(input("Which player draws? > "))
