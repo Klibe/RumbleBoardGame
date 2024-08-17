@@ -38,7 +38,7 @@ class modifierCard(card):
                 value = ""
                 if (self.mechanicsIncludeValue[index]):
                     value = " " + str(id)
-                infoString += str(self.mechanicsValues[index]) + str(value) + ", "
+                infoString += str(self.mechanicsValues[index]) + value + ", "
             index += 1
         if counter > 0:
             infoString = infoString[:-2]
@@ -73,6 +73,7 @@ class player:
     def __init__(self, fileName):
         playerDeckData = open(fileName, "r")
         playerDeckList = []
+        self.hand = [[],[]]
         self.fullComboDeck = []
         self.fullDualDeck = []
         for line in playerDeckData:
@@ -85,25 +86,25 @@ class player:
             self.fullDualDeck.append(deckData.dualDeck[id])
         self.comboDeck = self.fullComboDeck
         self.dualDeck = self.fullDualDeck
-        random.seed(time.time() * random.random())
-        random.shuffle(self.comboDeck)
-        random.seed(time.time() * random.random())
-        random.shuffle(self.dualDeck)
     def drawCombo(self, amount):
         for id in range(amount):
+            # random.seed(timime())
+            selectedCard = random.choice(self.comboDeck)
+            self.comboDeck.remove(selectedCard)
             if (len(self.comboDeck) == 0):
                 self.comboDeck = self.fullComboDeck
                 print("Refueled Combo Deck")
-            selectedCard = self.comboDeck[0]
-            self.comboDeck.remove(selectedCard)
             print(selectedCard.getInformationString())
     def drawDual(self, amount):
         for id in range(amount):
+            # random.seed(time.time())
+            selectedCard = random.choice(self.dualDeck)
+            self.dualDeck.remove(selectedCard)
             if (len(self.dualDeck) == 0):
                 self.dualDeck = self.fullDualDeck
                 print("Refueled Dual Deck")
-            selectedCard = self.dualDeck[0]
-            self.dualDeck.remove(selectedCard)
+            self.hand[0].append(selectedCard.card1.name)
+            self.hand[1].append(selectedCard.card2.name)
             print(selectedCard.getInformationString())
 
 
@@ -152,25 +153,84 @@ class deckDataHolder:
 
 
 deckData = deckDataHolder()
-for id in deckData.dualDeck:
-    print(id.getInformationString())
-for id in deckData.comboDeck:
-    print(id.getInformationString())
+# for id in deckData.dualDeck:
+    # print(id.getInformationString())
+# for id in deckData.comboDeck:
+    # print(id.getInformationString())
 
-player1 = player(input("Player one deck file name > "))
-player2 = player(input("Player two deck file name > "))
+player1 = player("player1deck.txt")
+player2 = player("player2deck.txt")
+
+random.seed(time.time())
 
 while True:
-    playerID = int(input("Which player draws? > "))
-    deckType = input("Which deck (c/d)? > ")
-    amountdrawn = int(input("How many cards to draw? > "))
-    if (playerID == 1):
-        if (deckType == "c"):
-            player1.drawCombo(amountdrawn)
-        else:
-            player1.drawDual(amountdrawn)
-    else:
-        if (deckType == "c"):
-            player2.drawCombo(amountdrawn)
-        else:
-            player2.drawDual(amountdrawn)
+    # Possibly add deck choser at the start here
+
+    # Draw 7:
+    player1.drawDual(7)
+    player2.drawDual(7)
+
+    
+    
+    # If hand > 7, choose X cards to remove
+    while len(player1.hand[0]) > 7:
+        handNotation = ["","",""]
+        for id in range(len(player1.hand[0])):
+            handNotation[0] += player1.hand[0][id][0] + "|"
+            handNotation[1] += player1.hand[1][id][0] + "|"
+            handNotation[2] += str(id+1)
+            if id < 9:
+                handNotation[2] += " "
+        print(handNotation[2])
+        print(handNotation[0])
+        print(handNotation[1])
+        
+        removedCard = int(input("PLAYER 1: Choose id of card to remove")) - 1
+        player1.hand[0].remove(player1.hand[0][removedCard])
+        player1.hand[1].remove(player1.hand[1][removedCard])
+
+    while len(player2.hand[0]) > 7:
+        handNotation = ["","",""]
+        for id in range(len(player2.hand[0])):
+            handNotation[0] += player2.hand[0][id][0] + "|"
+            handNotation[1] += player2.hand[1][id][0] + "|"
+            handNotation[2] += str(id+1)
+            if id < 9:
+                handNotation[2] += " "
+        print(handNotation[2])
+        print(handNotation[0])
+        print(handNotation[1])
+        
+        removedCard = int(input("PLAYER 2: Choose id of card to remove")) - 1
+        player2.hand[0].remove(player2.hand[0][removedCard])
+        player2.hand[1].remove(player2.hand[1][removedCard])
+    # For future BoredYoshi: Add game logistics here
+    
+    # THIS SYSTEM WILL STOP WORKING WHEN COMBOS ARE INTRODUCED
+    handNotation = ["","",""]
+
+    for id in range(len(player1.hand[0])):
+        handNotation[0] += player1.hand[0][id][0] + "|"
+        handNotation[1] += player1.hand[1][id][0] + "|"
+        handNotation[2] += str(id+1)
+        if id < 9:
+            handNotation[2] += " "
+    print("Player 1:")
+    print(handNotation[2])
+    print(handNotation[0])
+    print(handNotation[1])
+    print("")
+    print("Player 2:")
+    handNotation = ["","",""]
+    for id in range(len(player2.hand[0])):
+        handNotation[0] += player2.hand[0][id][0] + "|"
+        handNotation[1] += player2.hand[1][id][0] + "|"
+        handNotation[2] += str(id+1)
+        if id < 9:
+            handNotation[2] += " "
+    print(handNotation[2])
+    print(handNotation[0])
+    print(handNotation[1])
+
+    # End Turn option
+    int(input("end process?"))
