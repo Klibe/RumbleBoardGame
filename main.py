@@ -38,7 +38,7 @@ class modifierCard(card):
                 value = ""
                 if (self.mechanicsIncludeValue[index]):
                     value = " " + str(id)
-                infoString += self.mechanicsValues[index] + value + ", "
+                infoString += str(self.mechanicsValues[index]) + str(value) + ", "
             index += 1
         if counter > 0:
             infoString = infoString[:-2]
@@ -87,7 +87,7 @@ class player:
         self.dualDeck = self.fullDualDeck
     def drawCombo(self, amount):
         for id in range(amount):
-            random.seed(timime())
+            random.seed(time.time() + id)
             selectedCard = random.choice(self.comboDeck)
             self.comboDeck.remove(selectedCard)
             if (len(self.comboDeck) == 0):
@@ -96,7 +96,7 @@ class player:
             print(selectedCard.getInformationString())
     def drawDual(self, amount):
         for id in range(amount):
-            random.seed(time.time())
+            random.seed(time.time() + id)
             selectedCard = random.choice(self.dualDeck)
             self.dualDeck.remove(selectedCard)
             if (len(self.dualDeck) == 0):
