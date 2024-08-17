@@ -15,7 +15,8 @@ class modifierCard(card):
     def __init__(self, name, time, mechanics):
         self.name = name
         self.time = time
-
+        self.mechanicNames = ["Move", "Accelerate", "Overshoot", "Ground", "Unground", "Momentum"]
+        self.mechanicsIncludeValue = [True, True, True, False, False, True]
         self.mechanicsValues = []
         counter = 0
         for id in mechanics:
@@ -30,24 +31,15 @@ class modifierCard(card):
     def getInformationString(self):
         infoString = self.name + " : " + str(self.time) + "\n"
         counter = 0
-        if self.mechanicsValues[0] > 0:
-            counter += 1
-            infoString += "Move " + str(self.mechanicsValues[0]) + ", "
-        if self.mechanicsValues[1] > 0:
-            counter += 1
-            infoString += "Accelerate " + str(self.mechanicsValues[1]) + ", "
-        if self.mechanicsValues[2] > 0:
-            counter += 1
-            infoString += "Overshoot " + str(self.mechanicsValues[2]) + ", "
-        if self.mechanicsValues[3] > 0:
-            counter += 1
-            infoString += "Ground " + ", "
-        if self.mechanicsValues[4] > 0:
-            counter += 1
-            infoString += "Unground " + ", "
-        if self.mechanicsValues[5] > 0:
-            counter += 1
-            infoString += "Momentum " + str(self.mechanicsValues[5]) + ", "
+        index = 0
+        for id in self.mechanicsValues:
+            if id > 0:
+                counter += 1
+                value = ""
+                if (self.mechanicsIncludeValue[index]):
+                    value = " " + str(id)
+                infoString += self.mechanicsValues[index] + value + ", "
+            index += 1
         if counter > 0:
             infoString = infoString[:-2]
         return infoString
