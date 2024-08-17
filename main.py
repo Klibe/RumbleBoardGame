@@ -1,7 +1,6 @@
 import json
 import random
 import time
-from PIL import Image, ImageDraw, ImageFont
 
 class card:
     def __init__(self, name, time, text):
@@ -36,10 +35,10 @@ class modifierCard(card):
             infoString += "Move " + str(self.mechanicsValues[0]) + ", "
         if self.mechanicsValues[1] > 0:
             counter += 1
-            infoString += "Accelerate " + str(self.mechanicsValues[0]) + ", "
+            infoString += "Accelerate " + str(self.mechanicsValues[1]) + ", "
         if self.mechanicsValues[2] > 0:
             counter += 1
-            infoString += "Overshoot " + str(self.mechanicsValues[0]) + ", "
+            infoString += "Overshoot " + str(self.mechanicsValues[2]) + ", "
         if self.mechanicsValues[3] > 0:
             counter += 1
             infoString += "Ground " + ", "
@@ -48,7 +47,7 @@ class modifierCard(card):
             infoString += "Unground " + ", "
         if self.mechanicsValues[5] > 0:
             counter += 1
-            infoString += "Momentum " + str(self.mechanicsValues[0]) + ", "
+            infoString += "Momentum " + str(self.mechanicsValues[5]) + ", "
         if counter > 0:
             infoString = infoString[:-2]
         return infoString
@@ -79,19 +78,39 @@ class dualCard:
         return "========\n" + self.card1.getInformationString() + "\n--------\n" + self.card2.getInformationString() + "\n========\n"
 
 class player:
-    def __init__(self, comboDeck, dualDeck):
-        self.fullComboDeck = comboDeck
-        self.fullDualDeck = dualDeck
-        self.comboDeck = comboDeck
-        self.dualDeck = dualDeck
+    def __init__(self, fileName):
+        playerDeckData = open(fileName, "r")
+        playerDeckList = []
+        self.fullComboDeck = []
+        self.fullDualDeck = []
+        for line in playerDeckData:
+            playerDeckList.append(line)
+        playerComboIndexes = json.loads(playerDeckList[0])
+        for id in playerComboIndexes:
+            self.fullComboDeck.append(deckData.comboDeck[id])
+        playerDualIndexes = json.loads(playerDeckList[1])
+        for id in playerDualIndexes:
+            self.fullDualDeck.append(deckData.dualDeck[id])
+        self.comboDeck = self.fullComboDeck
+        self.dualDeck = self.fullDualDeck
     def drawCombo(self, amount):
         for id in range(amount):
-            random.seed(time.time())
+            random.seed(timime())
             selectedCard = random.choice(self.comboDeck)
-            self.comboDeck.remove(selectedCard)\
-            if self.comboDeck.len() == 0:
+            self.comboDeck.remove(selectedCard)
+            if (len(self.comboDeck) == 0):
                 self.comboDeck = self.fullComboDeck
-                print("Refueled ")
+                print("Refueled Combo Deck")
+            print(selectedCard.getInformationString())
+    def drawDual(self, amount):
+        for id in range(amount):
+            random.seed(time.time())
+            selectedCard = random.choice(self.dualDeck)
+            self.dualDeck.remove(selectedCard)
+            if (len(self.dualDeck) == 0):
+                self.dualDeck = self.fullDualDeck
+                print("Refueled Dual Deck")
+            print(selectedCard.getInformationString())
 
 
 class deckDataHolder:
@@ -144,15 +163,8 @@ for id in deckData.dualDeck:
 for id in deckData.comboDeck:
     print(id.getInformationString())
 
-while True:
-    ui1 = input("What deck to draw from? (d/c)")
-    ui2 = int(input("How many cards to draw"))
-    if (ui1 == "d"):
-        for id in range(ui2):
-            print(random.choice(deckData.dualDeck).getInformationString())
-            random.seed(time.time())
-    else:
-        print()
-        for id in range(ui2):
-            print(random.choice(deckData.comboDeck).getInformationString())
-            random.seed(time.time())
+player1 = player("player1deck.txt")
+player2 = player("player1deck.txt")
+
+
+player1.drawDual(2)
