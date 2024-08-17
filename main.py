@@ -85,23 +85,25 @@ class player:
             self.fullDualDeck.append(deckData.dualDeck[id])
         self.comboDeck = self.fullComboDeck
         self.dualDeck = self.fullDualDeck
+        random.seed(time.time() * random.random())
+        random.shuffle(self.comboDeck)
+        random.seed(time.time() * random.random())
+        random.shuffle(self.dualDeck)
     def drawCombo(self, amount):
         for id in range(amount):
-            random.seed(time.time() + id)
-            selectedCard = random.choice(self.comboDeck)
-            self.comboDeck.remove(selectedCard)
             if (len(self.comboDeck) == 0):
                 self.comboDeck = self.fullComboDeck
                 print("Refueled Combo Deck")
+            selectedCard = self.comboDeck[0]
+            self.comboDeck.remove(selectedCard)
             print(selectedCard.getInformationString())
     def drawDual(self, amount):
         for id in range(amount):
-            random.seed(time.time() + id)
-            selectedCard = random.choice(self.dualDeck)
-            self.dualDeck.remove(selectedCard)
             if (len(self.dualDeck) == 0):
                 self.dualDeck = self.fullDualDeck
                 print("Refueled Dual Deck")
+            selectedCard = self.dualDeck[0]
+            self.dualDeck.remove(selectedCard)
             print(selectedCard.getInformationString())
 
 
@@ -158,5 +160,17 @@ for id in deckData.comboDeck:
 player1 = player("player1deck.txt")
 player2 = player("player1deck.txt")
 
-
-player1.drawDual(2)
+while True:
+    playerID = int(input("Which player draws? > "))
+    deckType = input("Which deck (c/d)? > ")
+    amountdrawn = int(input("How many cards to draw? > "))
+    if (playerID == 1):
+        if (deckType == "c"):
+            player1.drawCombo(amountdrawn)
+        else:
+            player1.drawDual(amountdrawn)
+    else:
+        if (deckType == "c"):
+            player2.drawCombo(amountdrawn)
+        else:
+            player2.drawDual(amountdrawn)
