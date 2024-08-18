@@ -114,6 +114,7 @@ class player:
         self.comboDeck = []
         self.dualDeck = []
         self.fullComboDeck = []
+        self.health = 20
         self.fullDualDeck = []
         for line in playerDeckData:
             playerDeckList.append(line)
@@ -175,7 +176,9 @@ class gameManager:
             "help" : self.helpCommand,
             "info" : self.infoCommand,
             "play" : self.playCommand,
-            "end" : self.endCommand
+            "end" : self.endCommand,
+            "damage" : self.damageCommand,
+            "show" : self.showCommand
         }
     def helpCommand(self, player):
         print("Here's a list of available commands:")
@@ -183,6 +186,8 @@ class gameManager:
         print("info : Gives all the information of a card in your hand")
         print("play : Play a card in your hand")
         print("end : Ends turn")
+        print("damage : Damage Opponent")
+        print("show : Show current hand")
         return False
     def infoCommand(self, player):
         index = selectCardFromHands(player)
@@ -198,10 +203,22 @@ class gameManager:
             index -= len(player.hand[0])
             player.hand[1].remove(player.hand[1][index - 1])
         else:
-            player.hand[1].remove(player.hand[0][index] - 1)
+            player.hand[0].remove(player.hand[0][index - 1])
         return False
     def endCommand(self, player):
         return True
+    def damageCommand(self, otherPlayer):
+        amount = int(input("How much damage? > "))
+        if (otherPlayer == self.player1):
+            self.player2.health -= amount
+        else:
+            self.player1.health -= amount
+        return False
+    def showCommand(self, player):
+        print("Player 1 (" + str(manager.player1.health) + "):")
+        print(manager.player1.getDualHandDisplay())
+        print(manager.player1.getComboHandDisplay())
+        return False
 
 
 class deckDataHolder:
@@ -263,12 +280,12 @@ while True:
 
     # Draw 7:
     manager.player1.drawDual(7)
-    manager.player1.drawCombo(4)
-    print("Player 1:")
+    manager.player1.drawCombo(0)
+    print("Player 1 (" + str(manager.player1.health) + "):")
     print(manager.player1.getDualHandDisplay())
     print(manager.player1.getComboHandDisplay())
     endTurn = False
-    while endTurn:
+    while not endTurn:
         ui = input("Input command > ").lower()
         if (ui in manager.listOfCommands):
             endTurn = manager.listOfCommands[ui](manager.player1)
@@ -277,8 +294,8 @@ while True:
 
 
     manager.player2.drawDual(7)
-    manager.player2.drawCombo(4)
-    print("Player 2:")
+    manager.player2.drawCombo(0)
+    print("Player 2 (" + str(manager.player2.health) + "):")
     print(manager.player2.getDualHandDisplay())
     print(manager.player2.getComboHandDisplay())
     endTurn = False
@@ -288,6 +305,3 @@ while True:
             endTurn =  manager.listOfCommands[ui](manager.player2)
         else:
             print("No function named as such. Use help for list of functions")
-
-    # End Turn option
-    int(input("end process?"))
