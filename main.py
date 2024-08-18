@@ -38,7 +38,7 @@ class modifierCard(card):
                 value = ""
                 if (self.mechanicsIncludeValue[index]):
                     value = " " + str(id)
-                infoString += str(self.mechanicsValues[index]) + value + ", "
+                infoString += self.mechanicNames[index] + value + ", "
             index += 1
         if counter > 0:
             infoString = infoString[:-2]
@@ -60,7 +60,7 @@ class comboCard(card):
         self.time = time
         self.text = text
     def getInformationString(self):
-        infoString = self.name + " : " + str(self.time) + "\n" + self.text
+        infoString = "========\n" + self.name + " : " + str(self.time) + "\n" + self.text  + "\n========\n"
         return infoString
 class dualCard:
     def __init__(self, card1, card2):
@@ -69,43 +69,139 @@ class dualCard:
     def getInformationString(self):
         return "========\n" + self.card1.getInformationString() + "\n--------\n" + self.card2.getInformationString() + "\n========\n"
 
+# Debugging tools
+
+def displayDeck(deck):
+    coolstring = ""
+    for id in deck:
+        coolstring += id.name + ", "
+    if len(coolstring) > 2:
+        coolstring = coolstring[:-2]
+    else:
+        coolstring = "empty deck"
+    print(coolstring)
+
+# General utility functions
+
+def getListValue(list):
+    # Setting one list to another turns it into a reference and can cause issues. Use this instead to set the value of a list.
+    newList = []
+    for id in list:
+        newList.append(id)
+    return newList
+def selectCardFromHands(playerAtHand):
+    temp = 0
+    final = -1
+    while final != temp:
+        print(playerAtHand.getDualHandDisplay())
+        print(playerAtHand.getComboHandDisplay())
+        try:
+            temp = int(input("What index? > "))
+            if (temp > (len(playerAtHand.hand[0]) + len(playerAtHand.hand[1])) or temp < 1):
+                # Go to Except
+                eval (5/0)
+            final = temp
+        except:
+            print("invalid index")
+    return final
+
+
 class player:
     def __init__(self, fileName):
         playerDeckData = open(fileName, "r")
         playerDeckList = []
-        self.hand = [[],[]]
+        self.hand = [[],[]] # First hand is dual, second is combo
+        self.comboDeck = []
+        self.dualDeck = []
         self.fullComboDeck = []
         self.fullDualDeck = []
         for line in playerDeckData:
             playerDeckList.append(line)
         playerComboIndexes = json.loads(playerDeckList[0])
         for id in playerComboIndexes:
-            self.fullComboDeck.append(deckData.comboDeck[id])
+            self.fullComboDeck.append(deckData.comboLibrary[id])
         playerDualIndexes = json.loads(playerDeckList[1])
         for id in playerDualIndexes:
-            self.fullDualDeck.append(deckData.dualDeck[id])
-        self.comboDeck = self.fullComboDeck
-        self.dualDeck = self.fullDualDeck
+            self.fullDualDeck.append(deckData.dualLibrary[id])
+        self.comboDeck = getListValue(self.fullComboDeck)
+        u_seed()
+        random.shuffle(self.comboDeck)
+        self.dualDeck = getListValue(self.fullDualDeck)
+        u_seed()
+        random.shuffle(self.dualDeck)
     def drawCombo(self, amount):
         for id in range(amount):
-            # random.seed(timime())
-            selectedCard = random.choice(self.comboDeck)
-            self.comboDeck.remove(selectedCard)
             if (len(self.comboDeck) == 0):
-                self.comboDeck = self.fullComboDeck
+                self.comboDeck = getListValue(self.fullComboDeck)
                 print("Refueled Combo Deck")
-            print(selectedCard.getInformationString())
+            selectedCard = self.comboDeck[0]
+            self.comboDeck.remove(selectedCard)
+            self.hand[1].append(selectedCard)
     def drawDual(self, amount):
         for id in range(amount):
-            # random.seed(time.time())
-            selectedCard = random.choice(self.dualDeck)
-            self.dualDeck.remove(selectedCard)
             if (len(self.dualDeck) == 0):
-                self.dualDeck = self.fullDualDeck
+                self.dualDeck = getListValue(self.fullDualDeck)
                 print("Refueled Dual Deck")
-            self.hand[0].append(selectedCard.card1.name)
-            self.hand[1].append(selectedCard.card2.name)
-            print(selectedCard.getInformationString())
+            selectedCard = self.dualDeck[0]
+            self.dualDeck.remove(selectedCard)
+            self.hand[0].append(selectedCard)
+        while len(manager.player1.hand[0]) > 7:
+            print(manager.player1.getDualHandDisplay())
+            removedCard = int(input("Choose index of card to remove (" + str(len(manager.player1.hand[0]) - 7) +" left) > ")) - 1
+            manager.player1.hand[0].remove(manager.player1.hand[0][removedCard])
+    def getDualHandDisplay(self):
+        infoString = "Dual hand :\n"
+        counter = 0
+        for id in self.hand[0]:
+            counter += 1
+            infoString += str(counter) + " : " + id.card1.name + " / " + id.card2.name + "\n"
+        return infoString
+    def getComboHandDisplay(self):
+        infoString = "Combo Hand :\n"
+        counter = len(self.hand[0])
+        for id in self.hand[1]:
+            counter += 1
+            infoString += str(counter) + " : " + id.name + "\n"
+        return infoString
+
+
+
+class gameManager:
+    def __init__(self, player1, player2):
+        self.player1 = player1
+        self.player2 = player2
+        self.time = 100
+        self.listOfCommands = {
+            "help" : self.helpCommand,
+            "info" : self.infoCommand,
+            "play" : self.playCommand,
+            "end" : self.endCommand
+        }
+    def helpCommand(self, player):
+        print("Here's a list of available commands:")
+        print("help : Gives a list of commands and what they do")
+        print("info : Gives all the information of a card in your hand")
+        print("play : Play a card in your hand")
+        print("end : Ends turn")
+        return False
+    def infoCommand(self, player):
+        index = selectCardFromHands(player)
+        if (index > len(player.hand[0])):
+            index -= len(player.hand[0])
+            print(player.hand[1][index - 1].getInformationString())
+        else:
+            print(player.hand[0][index - 1].getInformationString())
+        return False
+    def playCommand(self, player):
+        index = selectCardFromHands(player)
+        if (index > len(player.hand[0])):
+            index -= len(player.hand[0])
+            player.hand[1].remove(player.hand[1][index - 1])
+        else:
+            player.hand[1].remove(player.hand[0][index] - 1)
+        return False
+    def endCommand(self, player):
+        return True
 
 
 class deckDataHolder:
@@ -121,8 +217,8 @@ class deckDataHolder:
         self.amountOfCards = json.loads(deckFileList[0])[0]
         self.amountOfDuals = json.loads(deckFileList[0])[1]
         self.cardList = []
-        self.dualDeck = []
-        self.comboDeck = []
+        self.dualLibrary = []
+        self.comboLibrary = []
         for id in range(self.amountOfCards):
             c_name = deckFileList[id * 4 + 2][2:]
             c_name = c_name[:-1]
@@ -139,98 +235,59 @@ class deckDataHolder:
             elif deckFileList[id * 4 + 2][0] == "c":
                 c_text = deckFileList[id * 4 + 4]
                 self.cardList.append(comboCard(c_name, c_time, c_text))
-                self.comboDeck.append(self.cardList[id])
+                self.comboLibrary.append(self.cardList[id])
             elif deckFileList[id * 4 + 2][0] == "a":
                 c_text = deckFileList[id * 4 + 4]
+                c_text = c_text[:-1]
                 self.cardList.append(card(c_name, c_time, c_text))
         for id in range(self.amountOfDuals):
             c_dual = json.loads(deckFileList[(self.amountOfCards) * 4 + 2 + id])
-            self.dualDeck.append(dualCard(self.cardList[c_dual[0]], self.cardList[c_dual[1]]))
+            self.dualLibrary.append(dualCard(self.cardList[c_dual[0]], self.cardList[c_dual[1]]))
 
 
-
+def u_seed():
+    random.seed(time.time() * random.random())
 
 
 
 deckData = deckDataHolder()
-# for id in deckData.dualDeck:
-    # print(id.getInformationString())
-# for id in deckData.comboDeck:
-    # print(id.getInformationString())
 
-player1 = player("player1deck.txt")
-player2 = player("player2deck.txt")
 
+#manager = gameManager(player(input("Player 1 deck data file name > ")), player(input("Player 2 deck data file name > ")))
+manager = gameManager(player("player1deck.txt"), player("player1deck.txt"))
 random.seed(time.time())
 
 while True:
+
     # Possibly add deck choser at the start here
 
     # Draw 7:
-    player1.drawDual(7)
-    player2.drawDual(7)
-
-    
-    
-    # If hand > 7, choose X cards to remove
-    while len(player1.hand[0]) > 7:
-        handNotation = ["","",""]
-        for id in range(len(player1.hand[0])):
-            handNotation[0] += player1.hand[0][id][0] + "|"
-            handNotation[1] += player1.hand[1][id][0] + "|"
-            handNotation[2] += str(id+1)
-            if id < 9:
-                handNotation[2] += " "
-        print(handNotation[2])
-        print(handNotation[0])
-        print(handNotation[1])
-        
-        removedCard = int(input("PLAYER 1: Choose id of card to remove")) - 1
-        player1.hand[0].remove(player1.hand[0][removedCard])
-        player1.hand[1].remove(player1.hand[1][removedCard])
-
-    while len(player2.hand[0]) > 7:
-        handNotation = ["","",""]
-        for id in range(len(player2.hand[0])):
-            handNotation[0] += player2.hand[0][id][0] + "|"
-            handNotation[1] += player2.hand[1][id][0] + "|"
-            handNotation[2] += str(id+1)
-            if id < 9:
-                handNotation[2] += " "
-        print(handNotation[2])
-        print(handNotation[0])
-        print(handNotation[1])
-        
-        removedCard = int(input("PLAYER 2: Choose id of card to remove")) - 1
-        player2.hand[0].remove(player2.hand[0][removedCard])
-        player2.hand[1].remove(player2.hand[1][removedCard])
-    # For future BoredYoshi: Add game logistics here
-    
-    # THIS SYSTEM WILL STOP WORKING WHEN COMBOS ARE INTRODUCED
-    handNotation = ["","",""]
-
-    for id in range(len(player1.hand[0])):
-        handNotation[0] += player1.hand[0][id][0] + "|"
-        handNotation[1] += player1.hand[1][id][0] + "|"
-        handNotation[2] += str(id+1)
-        if id < 9:
-            handNotation[2] += " "
+    manager.player1.drawDual(7)
+    manager.player1.drawCombo(4)
     print("Player 1:")
-    print(handNotation[2])
-    print(handNotation[0])
-    print(handNotation[1])
-    print("")
+    print(manager.player1.getDualHandDisplay())
+    print(manager.player1.getComboHandDisplay())
+    endTurn = False
+    while endTurn:
+        ui = input("Input command > ").lower()
+        if (ui in manager.listOfCommands):
+            endTurn = manager.listOfCommands[ui](manager.player1)
+        else:
+            print("No function named as such. Use help for list of functions")
+
+
+    manager.player2.drawDual(7)
+    manager.player2.drawCombo(4)
     print("Player 2:")
-    handNotation = ["","",""]
-    for id in range(len(player2.hand[0])):
-        handNotation[0] += player2.hand[0][id][0] + "|"
-        handNotation[1] += player2.hand[1][id][0] + "|"
-        handNotation[2] += str(id+1)
-        if id < 9:
-            handNotation[2] += " "
-    print(handNotation[2])
-    print(handNotation[0])
-    print(handNotation[1])
+    print(manager.player2.getDualHandDisplay())
+    print(manager.player2.getComboHandDisplay())
+    endTurn = False
+    while not endTurn:
+        ui = input("Input command > ").lower()
+        if (ui in manager.listOfCommands):
+            endTurn =  manager.listOfCommands[ui](manager.player2)
+        else:
+            print("No function named as such. Use help for list of functions")
 
     # End Turn option
     int(input("end process?"))
