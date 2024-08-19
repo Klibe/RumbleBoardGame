@@ -235,7 +235,7 @@ class gameManager:
         return False
 
 
-class deckDataHolder:
+class libraryDataHolder:
     def __init__(self):
         try:
             deck = open("carddata.txt", "r")
@@ -257,7 +257,7 @@ class deckDataHolder:
             if deckFileList[id * 4 + 2][0] == "m":
                 c_mechanicsSTR = deckFileList[id * 4 + 4]
                 c_mechanicsSTR = c_mechanicsSTR[:-1]
-                self.cardList.append(modifierCard(c_name, c_time, json.loads(c_mechanicsSTR)))
+                self.cardList.append(modifierCard(c_name, c_time,  json.loads(c_mechanicsSTR)))
             elif deckFileList[id * 4 + 2][0] == "s":
                 c_strenght = json.loads(deckFileList[id * 4 + 4])[0]
                 c_speed = json.loads(deckFileList[id * 4 + 4])[1]
@@ -281,7 +281,7 @@ def u_seed():
 
 
 
-deckData = deckDataHolder()
+deckData = libraryDataHolder()
 
 
 #manager = gameManager(player(input("Player 1 deck data file name > ")), player(input("Player 2 deck data file name > ")))
