@@ -1,51 +1,51 @@
 [12, 23]
 -
 m)Straight
-10
+1
 [1, 1, 0, 0, 0, 0]
 -
 m)Kick
-5
+1
 [0, 0, 0, 0, 1, 1]
 -
 m)Uppercut
-5
+1
 [1, 0, 0, 0, 1, 0]
 -
-s)disc
-5
+s)Disc
+1
 [0, 1, false]
 -
-s)ball
-10
+s)Ball
+2
 [1, 0, false]
 -
-s)pillar
-20
+s)Pillar
+4
 [1, 0, true]
 -
 s)Cube
-25
+5
 [2, 0, true]
 -
 s)Wall
-35
+7
 [3, 0, true]
 -
 c)Railgun
-70
+14
 Consume X>1 pillars to add Accelerate X equal to the amount of pillars to a summoned structure
 -
 a)Ground
-10
+2
 Block incoming structure with speed 4 or less, and ground
 -
 a)Parry
-5
+1
 Block incoming structure with speed 3 or less
 -
 a)Hold
-10
+2
 Move a structure by one tile
 -
 [0, 2]

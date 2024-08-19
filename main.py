@@ -99,7 +99,7 @@ def selectCardFromHands(playerAtHand):
             temp = int(input("What index? > "))
             if (temp > (len(playerAtHand.hand[0]) + len(playerAtHand.hand[1])) or temp < 1):
                 # Go to Except
-                eval (5/0)
+                eval(5/0)
             final = temp
         except:
             print("invalid index")
@@ -115,6 +115,7 @@ class player:
         self.dualDeck = []
         self.fullComboDeck = []
         self.health = 20
+        self.currentTime = 0
         self.fullDualDeck = []
         for line in playerDeckData:
             playerDeckList.append(line)
@@ -176,9 +177,9 @@ class gameManager:
             "help" : self.helpCommand,
             "info" : self.infoCommand,
             "play" : self.playCommand,
-            "end" : self.endCommand,
             "damage" : self.damageCommand,
-            "show" : self.showCommand
+            "show" : self.showCommand,
+            "wait" : self.waitCommand
         }
     def helpCommand(self, player):
         print("Here's a list of available commands:")
@@ -188,6 +189,7 @@ class gameManager:
         print("end : Ends turn")
         print("damage : Damage Opponent")
         print("show : Show current hand")
+        print("wait : Pass 1 time")
         return False
     def infoCommand(self, player):
         index = selectCardFromHands(player)
@@ -201,13 +203,18 @@ class gameManager:
         index = selectCardFromHands(player)
         if (index > len(player.hand[0])):
             index -= len(player.hand[0])
+            player.currentTime += player.hand[1][index - 1].time
             player.hand[1].remove(player.hand[1][index - 1])
         else:
+            ui = input("Left side or right side (l/r) > ")
+            if (ui == "l"):
+                player.currentTime += player.hand[0][index - 1].card1.time
+            else:
+                player.currentTime += player.hand[0][index - 1].card2.time
             player.hand[0].remove(player.hand[0][index - 1])
+        print("Current Time: " + str(player.currentTime))
         return False
-    def endCommand(self, player):
-        return True
-    def damageCommand(self, otherPlayer):
+    def damageCommand(self, player):
         amount = int(input("How much damage? > "))
         if (otherPlayer == self.player1):
             self.player2.health -= amount
@@ -215,9 +222,16 @@ class gameManager:
             self.player1.health -= amount
         return False
     def showCommand(self, player):
-        print("Player 1 (" + str(manager.player1.health) + "):")
+        print("Player 1 (" + str(manager.player1.health) + "): CurrentTime = " + str(self.player1.currentTime))
         print(manager.player1.getDualHandDisplay())
         print(manager.player1.getComboHandDisplay())
+        print("Player 2 (" + str(manager.player2.health) + "): CurrentTime = " + str(self.player2.currentTime))
+        print(manager.player2.getDualHandDisplay())
+        print(manager.player2.getComboHandDisplay())
+        return False
+    def waitCommand(self, player):
+        player.currentTime += 1
+        print("Current Time : " +  str(player.currentTime))
         return False
 
 
@@ -273,35 +287,35 @@ deckData = deckDataHolder()
 #manager = gameManager(player(input("Player 1 deck data file name > ")), player(input("Player 2 deck data file name > ")))
 manager = gameManager(player("player1deck.txt"), player("player1deck.txt"))
 random.seed(time.time())
-
+manager.player1.drawDual(7)
+manager.player1.drawCombo(0)
+manager.player2.drawDual(7)
+manager.player2.drawCombo(0)
 while True:
 
-    # Possibly add deck choser at the start here
-
-    # Draw 7:
-    manager.player1.drawDual(7)
-    manager.player1.drawCombo(0)
-    print("Player 1 (" + str(manager.player1.health) + "):")
-    print(manager.player1.getDualHandDisplay())
-    print(manager.player1.getComboHandDisplay())
-    endTurn = False
-    while not endTurn:
-        ui = input("Input command > ").lower()
+    while manager.player1.currentTime <= manager.player2.currentTime:
+        if manager.player1.currentTime > 20:
+            manager.player1.drawDual(7)
+            manager.player1.drawCombo(0)
+            manager.player2.drawDual(7)
+            manager.player2.drawCombo(0)
+            manager.player1.currentTime -= 20
+            manager.player2.currentTime -= 20
+        ui = input("Player 1 : Input command > ").lower()
         if (ui in manager.listOfCommands):
             endTurn = manager.listOfCommands[ui](manager.player1)
         else:
             print("No function named as such. Use help for list of functions")
-
-
-    manager.player2.drawDual(7)
-    manager.player2.drawCombo(0)
-    print("Player 2 (" + str(manager.player2.health) + "):")
-    print(manager.player2.getDualHandDisplay())
-    print(manager.player2.getComboHandDisplay())
-    endTurn = False
-    while not endTurn:
-        ui = input("Input command > ").lower()
+    while manager.player2.currentTime <= manager.player1.currentTime:
+        if manager.player2.currentTime > 20:
+            manager.player1.drawDual(7)
+            manager.player1.drawCombo(0)
+            manager.player2.drawDual(7)
+            manager.player2.drawCombo(0)
+            manager.player1.currentTime -= 20
+            manager.player2.currentTime -= 20
+        ui = input("Player 2 : Input command > ").lower()
         if (ui in manager.listOfCommands):
-            endTurn =  manager.listOfCommands[ui](manager.player2)
+            endTurn = manager.listOfCommands[ui](manager.player2)
         else:
             print("No function named as such. Use help for list of functions")
